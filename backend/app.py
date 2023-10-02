@@ -1,9 +1,13 @@
+from azure.identity import DefaultAzureCredential
+from azure.mgmt.resource import ResourceManagementClient
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import subprocess
 import time
 import uuid
+import logging
 
+logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 CORS(app)
 
@@ -13,15 +17,14 @@ class AzurePolicyTester:
         self.location = location
         self.max_retries = max_retries
         self._login_with_default_credentials()
-    
-    def _login_with_default_credentials(self):
-        # Log in using the default credentials
-        self._run_az_command("az login --use-device-code")
 
     def _run_az_command(self, command):
+        logging.debug(f"Executing command: {command}")
         result = subprocess.run(command, shell=True, text=True, capture_output=True)
         if result.returncode != 0:
+            logging.error(f"Command failed with error: {result.stderr}")
             raise Exception(f"Command failed: {result.stderr}")
+        logging.debug(f"Command output: {result.stdout}")
         return result.stdout
 
     def _create_resource_group(self):
@@ -50,12 +53,14 @@ class AzurePolicyTester:
 @app.route('/run-test', methods=['POST'])
 def run_test_endpoint():
     stages = request.json.get('stages', [])
+    logging.info(f"Received stages: {stages}")
     tester = AzurePolicyTester()
     try:
         tester.run_test(stages)
         return jsonify({"status": "success", "message": "Test completed successfully!"})
     except Exception as e:
+        logging.error(f"Test failed with error: {str(e)}")
         return jsonify({"status": "error", "message": str(e)})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5002)
