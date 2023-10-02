@@ -8,9 +8,21 @@
 </head>
 <body>
     <h1>Azure Policy Tester</h1>
-    <textarea id="commands" rows="10" cols="50" placeholder="Enter az CLI commands, one per line..."></textarea>
-    <button onclick="runTest()">Run Test</button>
+    
+    <div id="stages">
+        <div class="stage">
+            <h2>Stage 1</h2>
+            <textarea class="command-input" placeholder="Enter az CLI command..."></textarea>
+            <button class="save-btn">Save</button>
+            <button class="edit-btn">Edit</button>
+        </div>
+    </div>
+    
+    <button id="add-stage">Add Stage</button>
+    <button id="run-test">Run Test</button>
+    
     <div id="result"></div>
+    
     <script src="script.js"></script>
 </body>
 </html>

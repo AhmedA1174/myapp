@@ -3,7 +3,19 @@ body {
     padding: 20px;
 }
 
-textarea {
-    width: 100%;
+.stage {
+    border: 1px solid #ccc;
+    padding: 10px;
     margin-bottom: 10px;
+}
+
+.command-input {
+    width: 100%;
+    min-height: 100px;
+    font-family: monospace;
+    margin-bottom: 10px;
+}
+
+button {
+    margin-right: 10px;
 }
