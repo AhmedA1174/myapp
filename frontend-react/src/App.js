@@ -1,64 +1,123 @@
 import React, { useState } from 'react';
-import Stage from './components/Stage';
 import './App.css';
+import { useEffect } from 'react';
+import io from 'socket.io-client';
 
 function App() {
   const [subscriptionId, setSubscriptionId] = useState('');
-  const [stages, setStages] = useState([{ name: 'Stage 1', content: '' }]);
+  const [stages, setStages] = useState([{ name: '', command: '', isCollapsed: false }]);
+  // const [socket, setSocket] = useState(null);
 
-  const handleStageChange = (index, name, content) => {
-    const newStages = [...stages];
-    newStages[index] = { name, content };
-    setStages(newStages);
+  useEffect(() => {
+    const newSocket = io('http://localhost:5002');
+    // setSocket(newSocket);
+    newSocket.on('log', (data) => {
+      const stageIndex = stages.findIndex(stage => stage.name === data.stage);
+      if (stageIndex !== -1) {
+        const newStages = [...stages];
+        newStages[stageIndex].logs.push(data.message);
+        setStages(newStages);
+      }
+    });
+
+    return () => newSocket.disconnect();
+  }, [stages]);
+
+
+  const handleRunTest = async () => {
+    const commands = stages.map(s => s.command.replace("$RGTEST", "DynamicallyGeneratedRGName"));
+    const response = await fetch('http://localhost:5002/run-test', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ subscriptionId, stages: commands })
+    });
+    const data = await response.json();
+    alert(data.message);
   };
 
-  const addStage = () => {
-    setStages([...stages, { name: `Stage ${stages.length + 1}`, content: '' }]);
+  const handleAddStage = () => {
+    setStages([...stages, { name: '', command: '', isCollapsed: false }]);
   };
 
-  const removeStage = (index) => {
+  const handleDeleteStage = (index) => {
     const newStages = [...stages];
     newStages.splice(index, 1);
     setStages(newStages);
   };
+  
 
-  const runTest = async () => {
-    const commands = stages.map(stage => stage.content);
-    try {
-      const response = await fetch('http://localhost:5002/run-test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ stages: commands, subscriptionId: subscriptionId })
-      });
-      const data = await response.json();
-      alert(data.message);
-    } catch (error) {
-      alert('Error running test. Please try again.');
-    }
-  };  
+  const handleNameChange = (index, name) => {
+    const newStages = [...stages];
+    newStages[index].name = name;
+    setStages(newStages);
+  };
+
+  const handleCommandChange = (index, command) => {
+    const newStages = [...stages];
+    newStages[index].command = command;
+    setStages(newStages);
+  };
+
+  const toggleCollapse = (index) => {
+    const newStages = [...stages];
+    newStages[index].isCollapsed = !newStages[index].isCollapsed;
+    setStages(newStages);
+  };
 
   return (
     <div className="App">
-      <h1>Azure Policy Tester</h1>
-      {stages.map((stage, index) => (
-        <><input
+      <div className="header">
+        <h1>Azure Policy Tester</h1>
+        <div className="info-icon">
+          💡 Use $RGTEST as a placeholder for the Resource Group name.
+        </div>
+      </div>
+      <div className="subscription">
+        <label>Subscription ID:</label>
+        <input
           type="text"
-          placeholder="AZ Subscription ID"
           value={subscriptionId}
-          onChange={(e) => setSubscriptionId(e.target.value)} /><Stage
-            key={index}
-            stageName={stage.name}
-            stageContent={stage.content}
-            onSave={(name, content) => handleStageChange(index, name, content)}
-            onRemove={() => removeStage(index)} /></>
+          onChange={e => setSubscriptionId(e.target.value)}
+        />
+      </div>
+      {stages.map((stage, index) => (
+        <div key={index} className="stage">
+          {stage.isCollapsed ? (
+            <div className="collapsed-stage" onClick={() => toggleCollapse(index)}>
+              {stage.name}
+            </div>
+          ) : (
+            <div className="expanded-stage">
+              <input
+                type="text"
+                placeholder="Stage Name"
+                value={stage.name}
+                onChange={e => handleNameChange(index, e.target.value)}
+              />
+              <textarea
+                placeholder="Enter AZ CLI command..."
+                value={stage.command}
+                onChange={e => handleCommandChange(index, e.target.value)}
+              />
+              <div className="logs">
+                {stage.logs && stage.logs.map((log, logIndex) => (
+                  <div key={logIndex} className="log">{log}</div>
+                ))}
+              </div>
+              <div className="stage-buttons">
+                <button onClick={() => toggleCollapse(index)}>Save Stage</button>
+                <button onClick={() => handleDeleteStage(index)}>Delete</button>
+              </div>
+            </div>
+          )}
+        </div>
       ))}
-      <button onClick={addStage}>Add Stage</button>
-      <button onClick={runTest}>Run Test</button>
+      <button onClick={handleAddStage}>Add Stage</button>
+      <button onClick={handleRunTest}>Run Test</button>
     </div>
   );
 }
 
 export default App;
-
