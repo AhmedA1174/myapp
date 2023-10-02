@@ -21,9 +21,22 @@ function App() {
     setStages(newStages);
   };
 
-  const runTest = () => {
-    // Logic to send stages to the backend
-  };
+  const runTest = async () => {
+    const commands = stages.map(stage => stage.content);
+    try {
+      const response = await fetch('http://localhost:5000/run-test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ stages: commands })
+      });
+      const data = await response.json();
+      alert(data.message);
+    } catch (error) {
+      alert('Error running test. Please try again.');
+    }
+  };  
 
   return (
     <div className="App">
