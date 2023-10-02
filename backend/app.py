@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import subprocess
 import time
 import uuid
 
 app = Flask(__name__)
+CORS(app)
 
 class AzurePolicyTester:
     def __init__(self, location="northeurope", max_retries=3):
