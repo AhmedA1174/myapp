@@ -1,1 +1,4 @@
-Flask==2.0.1
+flask==2.2.3
+flask-cors==3.0.10
+azure-identity==1.14.0
+azure-mgmt-resource==23.0.1

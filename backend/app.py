@@ -12,11 +12,12 @@ app = Flask(__name__)
 CORS(app)
 
 class AzurePolicyTester:
-    def __init__(self, location="northeurope", max_retries=3):
+    def __init__(self, subscription_id, location="northeurope", max_retries=3):
+        self.credential = DefaultAzureCredential()
+        self.resource_client = ResourceManagementClient(self.credential, subscription_id)
         self.resource_group_name = f"testRG-{uuid.uuid4().hex[:8]}"
         self.location = location
         self.max_retries = max_retries
-        self._login_with_default_credentials()
 
     def _run_az_command(self, command):
         logging.debug(f"Executing command: {command}")
@@ -37,10 +38,11 @@ class AzurePolicyTester:
         self._create_resource_group()
         try:
             for stage in stages:
+                stage_with_rg = stage.replace("$RGTEST", self.resource_group_name)
                 retries = 0
                 while retries < self.max_retries:
                     try:
-                        self._run_az_command(stage)
+                        self._run_az_command(stage_with_rg)
                         break
                     except Exception as e:
                         retries += 1
@@ -53,8 +55,11 @@ class AzurePolicyTester:
 @app.route('/run-test', methods=['POST'])
 def run_test_endpoint():
     stages = request.json.get('stages', [])
+    subscription_id = request.json.get('subscriptionId', None)
+    if not subscription_id:
+        return jsonify({"status": "error", "message": "Subscription ID is required."})
     logging.info(f"Received stages: {stages}")
-    tester = AzurePolicyTester()
+    tester = AzurePolicyTester(subscription_id)
     try:
         tester.run_test(stages)
         return jsonify({"status": "success", "message": "Test completed successfully!"})
