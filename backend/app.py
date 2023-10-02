@@ -42,11 +42,12 @@ class AzurePolicyTester:
         self._create_resource_group()
         try:
             for stage in stages:
-                stage_with_rg = stage.replace("$RGTEST", self.resource_group_name)
+                stage_name = stage['name']
+                stage_command = stage['command'].replace("$RGTEST", self.resource_group_name)
                 retries = 0
                 while retries < self.max_retries:
                     try:
-                        self._run_az_command(stage_with_rg)
+                        self._run_az_command(stage_command, stage_name)  # Pass the stage name here
                         break
                     except Exception as e:
                         retries += 1
@@ -58,7 +59,8 @@ class AzurePolicyTester:
 
 @app.route('/run-test', methods=['POST'])
 def run_test_endpoint():
-    stages = request.json.get('stages', [])
+    stages_data = request.json.get('stages', [])
+    stages = [{'name': s['name'], 'command': s['command']} for s in stages_data]
     subscription_id = request.json.get('subscriptionId', None)
     if not subscription_id:
         return jsonify({"status": "error", "message": "Subscription ID is required."})

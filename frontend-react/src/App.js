@@ -25,7 +25,7 @@ function App() {
 
 
   const handleRunTest = async () => {
-    const commands = stages.map(s => s.command.replace("$RGTEST", "DynamicallyGeneratedRGName"));
+    const commands = stages.map(s => ({ name: s.name, command: s.command.replace("$RGTEST", "DynamicallyGeneratedRGName") }));
     const response = await fetch('http://localhost:5002/run-test', {
       method: 'POST',
       headers: {
