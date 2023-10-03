@@ -22,21 +22,25 @@ class AzurePolicyTester:
         self.max_retries = max_retries
 
     def _run_az_command(self, command, stage_name):
+        command = command.replace("$RGTEST", self.resource_group_name)  # Ensure replacement of $RGTEST
         logging.debug(f"Executing command: {command}")
         result = subprocess.run(command, shell=True, text=True, capture_output=True)
         if result.returncode != 0:
             logging.error(f"Command failed with error: {result.stderr}")
-            emit('log', {'stage': stage_name, 'message': f"Error: {result.stderr}"}, broadcast=True)
+            socketio.emit('log', {'stage': stage_name, 'message': f"Error: {result.stderr}"})
             raise Exception(f"Command failed: {result.stderr}")
         logging.debug(f"Command output: {result.stdout}")
-        emit('log', {'stage': stage_name, 'message': f"Output: {result.stdout}"}, broadcast=True)
+        socketio.emit('log', {'stage': stage_name, 'message': f"Output: {result.stdout}"})  # Ensure you're using socketio.emit without broadcast argument
         return result.stdout
 
+
     def _create_resource_group(self):
-        self._run_az_command(f"az group create --name {self.resource_group_name} --location {self.location}")
+        # CHANGED: Added a default stage name for the _run_az_command method
+        self._run_az_command(f"az group create --name {self.resource_group_name} --location {self.location}", "Resource Group Creation")
 
     def _delete_resource_group(self):
-        self._run_az_command(f"az group delete --name {self.resource_group_name} --yes --no-wait")
+        # CHANGED: Added a default stage name for the _run_az_command method
+        self._run_az_command(f"az group delete --name {self.resource_group_name} --yes --no-wait", "Resource Group Deletion")
 
     def run_test(self, stages):
         self._create_resource_group()
@@ -75,4 +79,3 @@ def run_test_endpoint():
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, port=5002)
-

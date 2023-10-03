@@ -5,12 +5,10 @@ import io from 'socket.io-client';
 
 function App() {
   const [subscriptionId, setSubscriptionId] = useState('');
-  const [stages, setStages] = useState([{ name: '', command: '', isCollapsed: false }]);
-  // const [socket, setSocket] = useState(null);
+  const [stages, setStages] = useState([{ name: '', command: '', isCollapsed: false, logs: [] }]);
 
   useEffect(() => {
     const newSocket = io('http://localhost:5002');
-    // setSocket(newSocket);
     newSocket.on('log', (data) => {
       const stageIndex = stages.findIndex(stage => stage.name === data.stage);
       if (stageIndex !== -1) {
@@ -23,9 +21,8 @@ function App() {
     return () => newSocket.disconnect();
   }, [stages]);
 
-
   const handleRunTest = async () => {
-    const commands = stages.map(s => ({ name: s.name, command: s.command.replace("$RGTEST", "DynamicallyGeneratedRGName") }));
+    const commands = stages.map(s => ({ name: s.name, command: s.command })); // Remove the .replace() method
     const response = await fetch('http://localhost:5002/run-test', {
       method: 'POST',
       headers: {
@@ -37,8 +34,9 @@ function App() {
     alert(data.message);
   };
 
+
   const handleAddStage = () => {
-    setStages([...stages, { name: '', command: '', isCollapsed: false }]);
+    setStages([...stages, { name: '', command: '', isCollapsed: false, logs: [] }]);
   };
 
   const handleDeleteStage = (index) => {
@@ -46,7 +44,6 @@ function App() {
     newStages.splice(index, 1);
     setStages(newStages);
   };
-  
 
   const handleNameChange = (index, name) => {
     const newStages = [...stages];
@@ -102,7 +99,7 @@ function App() {
                 onChange={e => handleCommandChange(index, e.target.value)}
               />
               <div className="logs">
-                {stage.logs && stage.logs.map((log, logIndex) => (
+                {stage.logs.map((log, logIndex) => (
                   <div key={logIndex} className="log">{log}</div>
                 ))}
               </div>
