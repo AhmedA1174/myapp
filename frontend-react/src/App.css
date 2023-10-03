@@ -1,104 +1,14 @@
 .App {
   font-family: Arial, Helvetica, sans-serif;
+  background-color: #f4f4f4;
+  min-height: 100vh;
   padding: 20px;
-  max-width: 600px;
-  margin: 40px auto;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Add global styles or reset styles if needed */
+body, h1, h2, h3, p {
+  margin: 0;
+  padding: 0;
 }
 
-.info-icon {
-  font-size: 14px;
-  background-color: #f7f7f7;
-  padding: 5px 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.info-icon:hover {
-  background-color: #e0e0e0;
-}
-
-.subscription {
-  margin: 20px 0;
-}
-
-.stage {
-  margin: 10px 0;
-}
-
-.stage-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-
-textarea {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  resize: vertical;
-}
-
-button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
-
-input[type="text"] {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.expanded-stage {
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-.collapsed-stage {
-  background-color: #f7f7f7;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  margin-bottom: 10px;
-}
-
-.collapsed-stage:hover {
-  background-color: #e0e0e0;
-}
-
-.log {
-  font-size: 0.8em;
-  color: gray;
-  margin-top: 5px;
-}
+/* Add more styles specific to the overall layout of your app */
