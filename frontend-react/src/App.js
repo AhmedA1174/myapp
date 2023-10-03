@@ -22,7 +22,14 @@ function App() {
   }, [stages]);
 
   const handleRunTest = async () => {
-    const commands = stages.map(s => ({ name: s.name, command: s.command })); // Remove the .replace() method
+    // Clear the logs for each stage
+    const clearedStages = stages.map(stage => ({
+      ...stage,
+      logs: []
+    }));
+    setStages(clearedStages);
+  
+    const commands = stages.map(s => ({ name: s.name, command: s.command }));
     const response = await fetch('http://localhost:5002/run-test', {
       method: 'POST',
       headers: {
@@ -32,7 +39,7 @@ function App() {
     });
     const data = await response.json();
     alert(data.message);
-  };
+  };  
 
 
   const handleAddStage = () => {
@@ -100,7 +107,7 @@ function App() {
               />
               <div className="logs">
                 {stage.logs.map((log, logIndex) => (
-                  <div key={logIndex} className="log">{log}</div>
+                  <pre key={logIndex} className="log">{log}</pre>
                 ))}
               </div>
               <div className="stage-buttons">
