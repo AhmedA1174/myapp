@@ -3,6 +3,7 @@ from azure.mgmt.resource import ResourceManagementClient
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
+from log_formatter import LogFormatter
 import subprocess
 import time
 import uuid
@@ -20,18 +21,25 @@ class AzurePolicyTester:
         self.resource_group_name = f"testRG-{uuid.uuid4().hex[:8]}"
         self.location = location
         self.max_retries = max_retries
+        self.log_formatter = LogFormatter()
 
     def _run_az_command(self, command, stage_name):
         command = command.replace("$RGTEST", self.resource_group_name)  # Ensure replacement of $RGTEST
         logging.debug(f"Executing command: {command}")
         result = subprocess.run(command, shell=True, text=True, capture_output=True)
+        
         if result.returncode != 0:
             logging.error(f"Command failed with error: {result.stderr}")
             socketio.emit('log', {'stage': stage_name, 'message': f"Error: {result.stderr}"})
             raise Exception(f"Command failed: {result.stderr}")
-        logging.debug(f"Command output: {result.stdout}")
-        socketio.emit('log', {'stage': stage_name, 'message': f"Output: {result.stdout}"})  # Ensure you're using socketio.emit without broadcast argument
-        return result.stdout
+        
+        # Use the LogFormatter to format the output
+        formatted_output = self.log_formatter.format_output(command, result.stdout)
+        
+        logging.debug(f"Command output: {formatted_output}")
+        socketio.emit('log', {'stage': stage_name, 'message': f"Output: {formatted_output}"})  # Ensure you're using socketio.emit without broadcast argument
+        
+        return formatted_output
 
 
     def _create_resource_group(self):
