@@ -30,7 +30,7 @@ function TestEditor() {
     }));
     setStages(clearedStages);
   
-    const commands = stages.map(s => ({ name: s.name, command: s.command }));
+    const commands = stages.map(s => ({ name: s.name, command: s.command, retries: s.retries }));
     const response = await fetch('http://localhost:5002/run-test', {
       method: 'POST',
       headers: {
@@ -71,6 +71,12 @@ function TestEditor() {
     setStages(newStages);
   };
 
+  const handleRetriesChange = (index, retries) => {
+    const newStages = [...stages];
+    newStages[index].retries = retries;
+    setStages(newStages);
+  };
+
   return (
     <div className="TestEditor">
       <div className="header">
@@ -106,6 +112,15 @@ function TestEditor() {
                 value={stage.command}
                 onChange={e => handleCommandChange(index, e.target.value)}
               />
+              <select
+                value={stage.retries}
+                onChange={e => handleRetriesChange(index, e.target.value)}
+              >
+                <option value="0">0 Retries</option>
+                <option value="1">1 Retry</option>
+                <option value="2">2 Retries</option>
+                <option value="3">3 Retries</option>
+              </select>
               <div className="logs">
                 {stage.logs.map((log, logIndex) => (
                   <SyntaxHighlighter 
