@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import './TestEditor.css'
 
 function TestEditor() {
@@ -106,7 +108,13 @@ function TestEditor() {
               />
               <div className="logs">
                 {stage.logs.map((log, logIndex) => (
-                  <pre key={logIndex} className="log">{log}</pre>
+                  <SyntaxHighlighter 
+                    language="bash" 
+                    style={docco} 
+                    key={logIndex}
+                  >
+                    {log}
+                  </SyntaxHighlighter>
                 ))}
               </div>
               <div className="stage-buttons">
